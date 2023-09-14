@@ -1,9 +1,12 @@
 "use strict";
 
-var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7067/oddsHub").build();
+// const queryString = window.location.search;
+// const urlParams = new URLSearchParams(queryString);
+// const matchId = urlParams.get('matchId');
+const matchId = '447986420';
+const companyId = '';
 
-//Disable the send button until connection is established.
-document.getElementById("sendButton").disabled = true;
+var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7067/oddsHub").build();
 
 connection.on("ReceiveMessage", function (message) {
     var li = document.createElement("li");
@@ -11,20 +14,19 @@ connection.on("ReceiveMessage", function (message) {
     // We can assign user-supplied strings to an element's textContent because it
     // is not interpreted as markup. If you're assigning in any other way, you 
     // should be aware of possible script injection concerns.
-    li.textContent = `${message.data.handicap.split(',')[0]}`;
+    li.textContent = `${message.data.handicap[0].split(',')[2]}`;
 });
 
 connection.start().then(function () {
-    document.getElementById("sendButton").disabled = false;
-}).catch(function (err) {
-    return console.error(err.toString());
-});
-
-document.getElementById("sendButton").addEventListener("click", function (event) {
-    var user = document.getElementById("userInput").value;
-    var message = document.getElementById("messageInput").value;
-    connection.invoke("SendMessage", user, message).catch(function (err) {
+    connection.invoke("SendMessage", matchId, companyId).catch(function (err) {
         return console.error(err.toString());
     });
-    event.preventDefault();
+    setInterval(() => {
+        connection.invoke("SendMessage", matchId, companyId).catch(function (err) {
+                    return console.error(err.toString());
+                });
+    }, 5_000);
+    // alert(connection.connectionId);
+}).catch(function (err) {
+    return console.error(err.toString());
 });

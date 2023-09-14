@@ -19,7 +19,7 @@
 
         public void Execute(object? stateInfo)
         {
-            Console.WriteLine($"{DateTime.Now} TimerControl executing...");
+            Console.WriteLine($"{DateTime.Now} Executing synchronization from MongoDb to FE...");
             _action();
             if ((DateTime.Now - TimerStarted).TotalSeconds > 60)
             {

@@ -1,6 +1,4 @@
-using ISport.Odds;
-using ISport.Odds.Models;
-using ISport.Odds.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 const string CORS_POLICY = "CorsPolicy";
@@ -25,14 +23,20 @@ builder.Services.AddCors(options =>
 //});
 
 // Add services to the container.
-builder.Services.Configure<DatabaseSettings>(
-    builder.Configuration.GetSection("OddsDatabase"));
+
+builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("OddsDatabase"));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MongoDbSettings>>().Value);
+
+builder.Services.AddScoped<MongoContext>();
+
+builder.Services.AddScoped<IPreMatchAndInPlayOddsMainRepository, PreMatchAndInPlayOddsMainRepository>();
+builder.Services.AddScoped<IPreMatchAndInPlayOddsMainService, PreMatchAndInPlayOddsMainService>();
+builder.Services.AddScoped<ITotalCornersRepository, TotalCornersRepository>();
+builder.Services.AddScoped<ITotalCornersService, TotalCornersService>();
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<OddsService>();
-//builder.Services.AddHostedService<TimerJob>();
-builder.Services.AddSingleton<TimerControl>();
+builder.Services.AddHostedService<SyncFromISportJob>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

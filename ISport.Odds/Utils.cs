@@ -6,6 +6,9 @@ namespace ISport.Odds
     public class Utils
     {
         public static string PreMatchAndInPlayOddsMainId = "64ffe293e95b5c58571473c1";
+        public static string TotalCornersPreMatchId = "6502cadaf1dd013e2334aec4";
+        public static string TotalCornersInPlayId = "6502cae3f1dd013e2334aec5";
+        public static JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         public static string SendGet(string url)
         {
