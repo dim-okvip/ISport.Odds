@@ -7,15 +7,15 @@
         public string? Id { get; set; }
         public int Code { get; set; }
         public string Message { get; set; }
-        public OddsType Data { get; set; }
+        public OddsType Data { get; set; } = new();
     }
 
     public class OddsType
     {
-        public List<string> Handicap { get; set; }
-        public List<string> EuropeOdds { get; set; }
-        public List<string> OverUnder { get; set; }
-        public List<string> HandicapHalf { get; set; }
-        public List<string> OverUnderHalf { get; set; }
+        public List<string> Handicap { get; set; } = new();
+        public List<string> EuropeOdds { get; set; } = new();
+        public List<string> OverUnder { get; set; } = new();
+        public List<string> HandicapHalf { get; set; } = new();
+        public List<string> OverUnderHalf { get; set; } = new();
     }
 }

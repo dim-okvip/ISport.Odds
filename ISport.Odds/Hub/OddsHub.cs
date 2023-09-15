@@ -4,32 +4,34 @@ namespace ISport.Odds
 {
     public class OddsHub : Hub
     {
-        //public static List<string> LisConnectedConnection = new List<string>();
         private readonly IPreMatchAndInPlayOddsMainService _preMatchAndInPlayOddsMainService;
+        private readonly ITotalCornersService _totalCornersService;
 
-        public OddsHub(IPreMatchAndInPlayOddsMainService preMatchAndInPlayOddsMainService)
+        public OddsHub(IPreMatchAndInPlayOddsMainService preMatchAndInPlayOddsMainService, ITotalCornersService totalCornersService)
         {
             _preMatchAndInPlayOddsMainService = preMatchAndInPlayOddsMainService;
+            _totalCornersService = totalCornersService;
         }
 
         public async Task SendMessage(string matchId, string? companyId)
         {
-            PreMatchAndInPlayOddsMain? odds = await _preMatchAndInPlayOddsMainService.GetByMatchIdAsync(Utils.PreMatchAndInPlayOddsMainId, matchId, companyId);
-            //await Clients.Client(connectionId).SendAsync("ReceiveMessage", odds);
-            await Clients.Caller.SendAsync("ReceiveMessage", odds);
+            PreMatchAndInPlayOddsMain preMatchAndInPlayOddsMain = await _preMatchAndInPlayOddsMainService.GetByMatchIdAsync(Source.InMemory, Utils.PreMatchAndInPlayOddsMainId, matchId, companyId);
+            TotalCorners totalCornersPrematch = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersPreMatchId, matchId, companyId);
+            TotalCorners totalCornersInPlay = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersInPlayId, matchId, companyId);
+
+            AggregatedOdds aggregatedOdds = new() { PreMatchAndInPlayOddsMain = preMatchAndInPlayOddsMain, TotalCornersPrematch = totalCornersPrematch , TotalCornersInPlay = totalCornersInPlay };
+            await Clients.Caller.SendAsync("ReceiveMessage", aggregatedOdds);
         }
 
         public override Task OnConnectedAsync()
         {
-            //LisConnectedConnection.Add(Context.ConnectionId);
-            Console.WriteLine($"Client {Context.ConnectionId} connected at {DateTime.Now}");
+            //Console.WriteLine($"Client {Context.ConnectionId} connected at {DateTime.Now}");
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            //LisConnectedConnection.Remove(Context.ConnectionId);
-            Console.WriteLine($"Client {Context.ConnectionId} disconnected at {DateTime.Now}");
+            //Console.WriteLine($"Client {Context.ConnectionId} disconnected at {DateTime.Now}");
             return base.OnDisconnectedAsync(exception);
         }
     }

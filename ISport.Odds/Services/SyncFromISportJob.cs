@@ -3,7 +3,7 @@
     public class SyncFromISportJob : BackgroundService
     {
         private Timer _timer;
-        private readonly int _second = 60;
+        private readonly int _interval;
         private readonly IConfiguration _configuration;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<SyncFromISportJob> _logger;
@@ -25,11 +25,12 @@
             _urlPreMatchAndInPlayOddsMain = Utils.GetUriWithQueryString(_configuration["ISport:PreMatchAndInPlayOdds.Main"], _query);
             _urlTotalCornersPreMatch = Utils.GetUriWithQueryString(_configuration["ISport:TotalCorners.PreMatch"], _query);
             _urlTotalCornersInPlay = Utils.GetUriWithQueryString(_configuration["ISport:TotalCorners.InPlay"], _query);
+            _interval = int.Parse(_configuration["ISport:Interval"]);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(_second));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(_interval));
         }
 
         private async void DoWork(object? state)
@@ -38,61 +39,71 @@
             {
                 using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
-                    IPreMatchAndInPlayOddsMainService _preMatchAndInPlayOddsMainService = scope.ServiceProvider.GetRequiredService<IPreMatchAndInPlayOddsMainService>();
-                    ITotalCornersService _totalCornersService = scope.ServiceProvider.GetRequiredService<ITotalCornersService>();
-
-                    await Task.Run(async () =>
+                    var getOddsTypeTask = Task.Run(async () =>
                     {
-                        string resultPreMatchAndInPlayOddsMain = Utils.SendGet(_urlPreMatchAndInPlayOddsMain);
-                        PreMatchAndInPlayOddsMain? preMatchAndInPlayOddsMain = JsonSerializer.Deserialize<PreMatchAndInPlayOddsMain>(resultPreMatchAndInPlayOddsMain, Utils.JsonSerializerOptions);
-                        if (preMatchAndInPlayOddsMain is not null && preMatchAndInPlayOddsMain.Code is 0)
+                        IPreMatchAndInPlayOddsMainService _preMatchAndInPlayOddsMainService = scope.ServiceProvider.GetRequiredService<IPreMatchAndInPlayOddsMainService>();
+                        string result = Utils.SendGet(_urlPreMatchAndInPlayOddsMain);
+                        PreMatchAndInPlayOddsMain? oddsISport = JsonSerializer.Deserialize<PreMatchAndInPlayOddsMain>(result, Utils.JsonSerializerOptions);
+                        if (oddsISport is not null && oddsISport.Code is 0)
                         {
-                            preMatchAndInPlayOddsMain.Id = Utils.PreMatchAndInPlayOddsMainId;
-                            if (_preMatchAndInPlayOddsMainService.GetByIdAsync(preMatchAndInPlayOddsMain.Id) is null)
-                                await _preMatchAndInPlayOddsMainService.InsertAsync(preMatchAndInPlayOddsMain);
+                            oddsISport.Id = Utils.PreMatchAndInPlayOddsMainId;
+                            PreMatchAndInPlayOddsMain oddsMongoDB = await _preMatchAndInPlayOddsMainService.GetByIdAsync(oddsISport.Id);
+                            if (oddsMongoDB is null)
+                                await _preMatchAndInPlayOddsMainService.InsertAsync(oddsISport);
                             else
-                                await _preMatchAndInPlayOddsMainService.UpdateAsync(preMatchAndInPlayOddsMain.Id, preMatchAndInPlayOddsMain);
+                                await _preMatchAndInPlayOddsMainService.UpdateAsync(oddsISport.Id, oddsISport);
+                            
+                            InMemory.PreMatchAndInPlayOddsMain = oddsISport;
 
-                            _logger.LogInformation($"{DateTime.Now} Synchronization pre-match and in-play odds (main) data from ISport Odds API every {_second} second succeed");
+                            _logger.LogInformation($"{DateTime.Now} Synchronization pre-match and in-play odds (main) data from ISport Odds API every {_interval} second succeed!");
                         }
                         else
                             _logger.LogInformation($"{DateTime.Now} ISport API return empty pre-match and in-play odds (main) data!");
                     });
 
-                    await Task.Run(async () =>
+                    var getOddsCornerTask = Task.Run(async () =>
                     {
-                        string resultTotalCornersPreMatch = Utils.SendGet(_urlTotalCornersPreMatch);
-                        string resultTotalCornersInPlay = Utils.SendGet(_urlTotalCornersInPlay);
+                        ITotalCornersService _totalCornersService = scope.ServiceProvider.GetRequiredService<ITotalCornersService>();
+                        string resultPreMatch = Utils.SendGet(_urlTotalCornersPreMatch);
+                        string resultInPlay = Utils.SendGet(_urlTotalCornersInPlay);
 
-                        TotalCorners? totalCornersPrematch = JsonSerializer.Deserialize<TotalCorners>(resultTotalCornersPreMatch, Utils.JsonSerializerOptions);
-                        TotalCorners? totalCornersInplay = JsonSerializer.Deserialize<TotalCorners>(resultTotalCornersInPlay, Utils.JsonSerializerOptions);
+                        TotalCorners? cornerPreMatchISport = JsonSerializer.Deserialize<TotalCorners>(resultPreMatch, Utils.JsonSerializerOptions);
+                        TotalCorners? cornerInPlayISport = JsonSerializer.Deserialize<TotalCorners>(resultInPlay, Utils.JsonSerializerOptions);
 
-                        if (totalCornersPrematch is not null && totalCornersPrematch.Code is 0)
+                        if (cornerPreMatchISport is not null && cornerPreMatchISport.Code is 0)
                         {
-                            totalCornersPrematch.Id = Utils.TotalCornersPreMatchId;
-                            if (_totalCornersService.GetByIdAsync(totalCornersPrematch.Id) is null)
-                                await _totalCornersService.InsertAsync(totalCornersPrematch);
+                            cornerPreMatchISport.Id = Utils.TotalCornersPreMatchId;
+                            TotalCorners cornerPreMatchMongoDB = await _totalCornersService.GetByIdAsync(cornerPreMatchISport.Id);
+                            if (cornerPreMatchMongoDB is null)
+                                await _totalCornersService.InsertAsync(cornerPreMatchISport);
                             else
-                                await _totalCornersService.UpdateAsync(totalCornersPrematch.Id, totalCornersPrematch);
+                                await _totalCornersService.UpdateAsync(cornerPreMatchISport.Id, cornerPreMatchISport);
+                            
+                            InMemory.TotalCornersPreMatch = cornerPreMatchISport;
 
-                            _logger.LogInformation($"{DateTime.Now} Synchronization total corners (pre-match) data from ISport Odds API every {_second} second succeed");
+                            _logger.LogInformation($"{DateTime.Now} Synchronization total corners (pre-match) data from ISport Odds API every {_interval} second succeed!");
                         }
                         else
                             _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (pre-match) data!");
 
-                        if (totalCornersInplay is not null && totalCornersInplay.Code is 0)
+                        if (cornerInPlayISport is not null && cornerInPlayISport.Code is 0)
                         {
-                            totalCornersInplay.Id = Utils.TotalCornersInPlayId;
-                            if (_totalCornersService.GetByIdAsync(totalCornersInplay.Id) is null)
-                                await _totalCornersService.InsertAsync(totalCornersInplay);
+                            cornerInPlayISport.Id = Utils.TotalCornersInPlayId;
+                            TotalCorners cornerInPlayMongoDB = await _totalCornersService.GetByIdAsync(cornerInPlayISport.Id);
+                            if (cornerInPlayMongoDB is null)
+                                await _totalCornersService.InsertAsync(cornerInPlayISport);
                             else
-                                await _totalCornersService.UpdateAsync(totalCornersInplay.Id, totalCornersInplay);
+                                await _totalCornersService.UpdateAsync(cornerInPlayISport.Id, cornerInPlayISport);
 
-                            _logger.LogInformation($"{DateTime.Now} Synchronization total corners (in-play) data from ISport Odds API every {_second} second succeed");
+                            InMemory.TotalCornersInPlay = cornerInPlayISport;
+
+                            _logger.LogInformation($"{DateTime.Now} Synchronization total corners (in-play) data from ISport Odds API every {_interval} second succeed!");
                         }
                         else
                             _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (in-play) data!");
                     });
+
+                    await Task.WhenAll(getOddsTypeTask, getOddsCornerTask);
                 }
             }
             catch (Exception ex)

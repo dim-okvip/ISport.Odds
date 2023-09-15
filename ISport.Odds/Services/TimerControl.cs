@@ -19,7 +19,7 @@
 
         public void Execute(object? stateInfo)
         {
-            Console.WriteLine($"{DateTime.Now} Executing synchronization from MongoDb to FE...");
+            Console.WriteLine($"{DateTime.Now} Executing synchronization from MongoDB to FE...");
             _action();
             if ((DateTime.Now - TimerStarted).TotalSeconds > 60)
             {
@@ -27,5 +27,10 @@
                 _timer.Dispose();
             }
         }
+
+        //if (!_timerControl.IsTimerStarted)
+        //    _timerControl.ScheduleTimer(async () => await _oddsHub.Clients.Client(connectionId: connectionId).SendAsync(
+        //        $"ReceiveMessage",
+        //        await _oddsService.GetPreMatchAndInPlayMainOddsAsync(Utils.PreMatchAndInPlayOddsMainId, matchId, companyId)), 5000);
     }
 }

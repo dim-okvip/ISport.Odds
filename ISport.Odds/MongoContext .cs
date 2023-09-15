@@ -7,7 +7,7 @@ namespace ISport.Odds
     {
         public IMongoDatabase Database { get; }
 
-        public MongoContext(MongoDbSettings connectionSetting)
+        public MongoContext(MongoDBSettings connectionSetting)
         {
             var client = new MongoClient(connectionSetting.ConnectionString);
             Database = client.GetDatabase(connectionSetting.DatabaseName);

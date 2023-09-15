@@ -7,14 +7,14 @@
         public string? Id { get; set; }
         public int Code { get; set; }
         public string Message { get; set; }
-        public List<TotalCornersDetail> Data { get; set; }
+        public List<TotalCornersDetail> Data { get; set; } = new();
     }
 
     public class TotalCornersDetail
     {
         public string MatchId { get; set; }
         public string CompanyId { get; set; }
-        public TotalCornersOddsDetail Odds { get; set; }
+        public TotalCornersOddsDetail Odds { get; set; } = new();
         public long ChangeTime { get; set; }
     }
 

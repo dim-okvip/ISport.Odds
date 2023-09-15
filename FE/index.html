@@ -4,20 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <div class="row p-1">
-            <div class="col-6">
-                <hr />
-            </div>
-        </div>
+        <hr>
+        <table class="table">
+            <thead>
+                <th style="background-color: blue;width: 15px"></th>
+                <th>Tỉ lệ cược mở màn</th>
+                <th style="background-color: orange;width: 15px"></th>
+                <th>Tỉ lệ cược trước trận đấu</th>
+                <th style="background-color: green;width: 15px"></th>
+                <th>Tỉ lệ cược trong trận</th>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <table class="table table-bordered">
+            <thead>
+                <th style="width: 15px;"></th>
+                <th>1</th>
+                <th>X</th>
+                <th>2</th>
+                <th colspan="4">Điểm chấp</th>
+                <th>Bàn thắng</th>
+                <th>Cao hơn</th>
+                <th>Thấp hơn</th>
+                <th>Phạt góc</th>
+                <th>Cao hơn</th>
+                <th>Thấp hơn</th>
+            </thead>
+            <tbody>
+                <tr id="initial">
+                    <td style="background-color: blue;"></td>
+                    <td id="initialOddsEuro1"></td>
+                    <td id="initialOddsEuroX"></td>
+                    <td id="initialOddsEuro2"></td>
+                    <td id="initialHandicap1"></td>
+                    <td id="initialOddsHandicap1"></td>
+                    <td id="initialHandicap2"></td>
+                    <td id="initialOddsHandicap2"></td>
+                    <td id="initialOverUnder1"></td>
+                    <td id="initialOddsOverUnder1"></td>
+                    <td id="initialOddsOverUnder2"></td>
+                    <td id="initialTotalCorners"></td>
+                    <td id="initialOddsTotalCorners1"></td>
+                    <td id="initialOddsTotalCorners2"></td>
+                </tr>
+                <tr id="beforeMatch">
+                    <td style="background-color: orange;"></td>
+                    <td id="beforeMatchOddsEuro1"></td>
+                    <td id="beforeMatchOddsEuroX"></td>
+                    <td id="beforeMatchOddsEuro2"></td>
+                    <td id="beforeMatchHandicap1"></td>
+                    <td id="beforeMatchOddsHandicap1"></td>
+                    <td id="beforeMatchHandicap2"></td>
+                    <td id="beforeMatchOddsHandicap2"></td>
+                    <td id="beforeMatchOverUnder1"></td>
+                    <td id="beforeMatchOddsOverUnder1"></td>
+                    <td id="beforeMatchOddsOverUnder2"></td>
+                    <td id="beforeMatchTotalCorners"></td>
+                    <td id="beforeMatchOddsTotalCorners1"></td>
+                    <td id="beforeMatchOddsTotalCorners2"></td>
+                </tr>
+                <tr id="inPlay">
+                    <td style="background-color: green;"></td>
+                    <td id="inPlayOddsEuro1"></td>
+                    <td id="inPlayOddsEuroX"></td>
+                    <td id="inPlayOddsEuro2"></td>
+                    <td id="inPlayHandicap1"></td>
+                    <td id="inPlayOddsHandicap1"></td>
+                    <td id="inPlayHandicap2"></td>
+                    <td id="inPlayOddsHandicap2"></td>
+                    <td id="inPlayOverUnder1"></td>
+                    <td id="inPlayOddsOverUnder1"></td>
+                    <td id="inPlayOddsOverUnder2"></td>
+                    <td id="inPlayTotalCorners"></td>
+                    <td id="inPlayOddsTotalCorners1"></td>
+                    <td id="inPlayOddsTotalCorners2"></td>
+                </tr>
+            </tbody>
+          </table>
         <div class="row p-1">
             <div class="col-6">
                 <ul id="messagesList"></ul>
             </div>
         </div>
     </div>
+
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js"></script>
+
     <script src="signalr.js"></script>
     <script src="index.js"></script>
 </body>
