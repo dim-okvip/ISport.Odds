@@ -13,7 +13,7 @@ namespace ISport.Odds
             _totalCornersService = totalCornersService;
         }
 
-        public async Task SendMessage(string matchId, string? companyId)
+        public async Task SendMessage(string? matchId, string? companyId)
         {
             PreMatchAndInPlayOddsMain preMatchAndInPlayOddsMain = await _preMatchAndInPlayOddsMainService.GetByMatchIdAsync(Source.InMemory, Utils.PreMatchAndInPlayOddsMainId, matchId, companyId);
             TotalCorners totalCornersPrematch = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersPreMatchId, matchId, companyId);

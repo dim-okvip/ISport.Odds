@@ -24,8 +24,8 @@
                     odds = await _repository.GetByIdAsync(id);
                     break;
                 case Source.InMemory:
-                    if (id == Utils.TotalCornersPreMatchId) odds = InMemory.TotalCornersPreMatch;
-                    if (id == Utils.TotalCornersInPlayId) odds = InMemory.TotalCornersInPlay;
+                    if (id == Utils.TotalCornersPreMatchId) odds = InMemory.TotalCornersPreMatch.Clone();
+                    if (id == Utils.TotalCornersInPlayId) odds = InMemory.TotalCornersInPlay.Clone();
                     break;
                 default:
                     odds = await _repository.GetByIdAsync(id);

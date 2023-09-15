@@ -1,9 +1,9 @@
 "use strict";
 
-// const queryString = window.location.search;
-// const urlParams = new URLSearchParams(queryString);
-// const matchId = urlParams.get('matchId');
-const matchId = '121512326';
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const matchId = urlParams.get('matchId');
+// const matchId = '385963326';
 const companyId = '';
 
 var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7067/oddsHub").build();
@@ -14,8 +14,12 @@ connection.on("ReceiveMessage", function (message) {
 });
 
 connection.start().then(function () {
-    triggerHub();
-    setInterval(triggerHub, 5_000);
+    if (typeof matchId !== 'undefined' && matchId !== null && matchId !== '') {
+        triggerHub();
+        setInterval(triggerHub, 5_000);
+    }else{
+        alert("Please provide value for query param 'matchId'");
+    }
     // alert(connection.connectionId);
 }).catch(function (err) {
     return console.error(err.toString());

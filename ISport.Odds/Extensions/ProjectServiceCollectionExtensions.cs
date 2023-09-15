@@ -9,7 +9,7 @@ namespace ISport.Odds.Extensions
                 .AddCors()
                 .AddDbContext(configuration)
                 .AddRepositoryAndServices()
-                .AddHostedServices()
+                //.AddHostedServices()
             ;
 
         internal static IServiceCollection AddCors(this IServiceCollection services) =>

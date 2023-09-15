@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ISport.Odds
 {
-    public class Utils
+    public static class Utils
     {
         public const string CORS_POLICY = "CorsPolicy";
         public static string PreMatchAndInPlayOddsMainId = "64ffe293e95b5c58571473c1";
@@ -48,6 +48,12 @@ namespace ISport.Odds
                 startingQuestionMarkAdded = true;
             }
             return sb.ToString();
+        }
+
+        public static T Clone<T>(this T self)
+        {
+            var serialized = JsonSerializer.Serialize(self);
+            return JsonSerializer.Deserialize<T>(serialized);
         }
     }
 

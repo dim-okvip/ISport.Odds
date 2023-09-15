@@ -24,7 +24,7 @@
                     odds = await _repository.GetByIdAsync(id);
                     break;
                 case Source.InMemory:
-                    odds = InMemory.PreMatchAndInPlayOddsMain;
+                    odds = InMemory.PreMatchAndInPlayOddsMain.Clone();
                     break;
                 default:
                     odds = await _repository.GetByIdAsync(id);
