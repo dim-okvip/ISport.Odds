@@ -60,9 +60,11 @@ connection.on("ReceiveMessage", function (message) {
             document.getElementById('overUnder-beforeMatchUnder').innerHTML = overUnder[7];
             
             var totalCornersInPlay = message.totalCornersInPlay.data;
-            document.getElementById('totalCorners-beforeMatchTotalCorners').innerHTML = totalCornersInPlay[0].odds.totalCorners;
-            document.getElementById('totalCorners-beforeMatchOver').innerHTML = totalCornersInPlay[0].odds.over;
-            document.getElementById('totalCorners-beforeMatchUnder').innerHTML = totalCornersInPlay[0].odds.under;
+            if (totalCornersInPlay.length > 0) {
+                document.getElementById('totalCorners-beforeMatchTotalCorners').innerHTML = totalCornersInPlay[0].odds.totalCorners;
+                document.getElementById('totalCorners-beforeMatchOver').innerHTML = totalCornersInPlay[0].odds.over;
+                document.getElementById('totalCorners-beforeMatchUnder').innerHTML = totalCornersInPlay[0].odds.under;
+            }  
 
             break;
         case InplayOdds:
@@ -83,9 +85,11 @@ connection.on("ReceiveMessage", function (message) {
             document.getElementById('overUnder-inPlayUnder').innerHTML = overUnder[7];
 
             var totalCornersInPlay = message.totalCornersInPlay.data;
-            document.getElementById('totalCorners-inPlayTotalCorners').innerHTML = totalCornersInPlay[0].odds.totalCorners;
-            document.getElementById('totalCorners-inPlayOver').innerHTML = totalCornersInPlay[0].odds.over;
-            document.getElementById('totalCorners-inPlayUnder').innerHTML = totalCornersInPlay[0].odds.under;
+            if (totalCornersInPlay.length > 0) {
+                document.getElementById('totalCorners-inPlayTotalCorners').innerHTML = totalCornersInPlay[0].odds.totalCorners;
+                document.getElementById('totalCorners-inPlayOver').innerHTML = totalCornersInPlay[0].odds.over;
+                document.getElementById('totalCorners-inPlayUnder').innerHTML = totalCornersInPlay[0].odds.under;    
+            }
             break;
         default:
             break;
