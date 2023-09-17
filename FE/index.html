@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
 </head>
 <body>
@@ -23,7 +24,7 @@
         </table>
         <table class="table table-bordered">
             <thead>
-                <th style="width: 15px;"></th>
+                <th style="width: 15px"></th>
                 <th>1</th>
                 <th>X</th>
                 <th>2</th>
@@ -38,51 +39,51 @@
             <tbody>
                 <tr id="initial">
                     <td style="background-color: blue;"></td>
-                    <td id="initialOddsEuro1"></td>
-                    <td id="initialOddsEuroX"></td>
-                    <td id="initialOddsEuro2"></td>
-                    <td id="initialHandicap1"></td>
-                    <td id="initialOddsHandicap1"></td>
-                    <td id="initialHandicap2"></td>
-                    <td id="initialOddsHandicap2"></td>
-                    <td id="initialOverUnder1"></td>
-                    <td id="initialOddsOverUnder1"></td>
-                    <td id="initialOddsOverUnder2"></td>
-                    <td id="initialTotalCorners"></td>
-                    <td id="initialOddsTotalCorners1"></td>
-                    <td id="initialOddsTotalCorners2"></td>
+                    <td id="europeOdds-initialHome"></td>
+                    <td id="europeOdds-initialDraw"></td>
+                    <td id="europeOdds-initialAway"></td>
+                    <td id="handicap-initialHandicapHome" class="red"></td>
+                    <td id="handicap-initialHome"></td>
+                    <td id="handicap-initialHandicapAway" class="red"></td>
+                    <td id="handicap-initialAway"></td>
+                    <td id="overUnder-initialHandicap" class="red"></td>
+                    <td id="overUnder-initialOver"></td>
+                    <td id="overUnder-initialUnder"></td>
+                    <td id="totalCorners-initialTotalCorners" class="red"></td>
+                    <td id="totalCorners-initialOver"></td>
+                    <td id="totalCorners-initialUnder"></td>
                 </tr>
-                <tr id="beforeMatch">
+                <tr id="beforeMatch" style="display: none;">
                     <td style="background-color: orange;"></td>
-                    <td id="beforeMatchOddsEuro1"></td>
-                    <td id="beforeMatchOddsEuroX"></td>
-                    <td id="beforeMatchOddsEuro2"></td>
-                    <td id="beforeMatchHandicap1"></td>
-                    <td id="beforeMatchOddsHandicap1"></td>
-                    <td id="beforeMatchHandicap2"></td>
-                    <td id="beforeMatchOddsHandicap2"></td>
-                    <td id="beforeMatchOverUnder1"></td>
-                    <td id="beforeMatchOddsOverUnder1"></td>
-                    <td id="beforeMatchOddsOverUnder2"></td>
-                    <td id="beforeMatchTotalCorners"></td>
-                    <td id="beforeMatchOddsTotalCorners1"></td>
-                    <td id="beforeMatchOddsTotalCorners2"></td>
+                    <td id="europeOdds-beforeMatchHome"></td>
+                    <td id="europeOdds-beforeMatchDraw"></td>
+                    <td id="europeOdds-beforeMatchAway"></td>
+                    <td id="handicap-beforeMatchHandicapHome" class="red"></td>
+                    <td id="handicap-beforeMatchHome"></td>
+                    <td id="handicap-beforeMatchHandicapAway" class="red"></td>
+                    <td id="handicap-beforeMatchAway"></td>
+                    <td id="overUnder-beforeMatchHandicap" class="red"></td>
+                    <td id="overUnder-beforeMatchOver"></td>
+                    <td id="overUnder-beforeMatchUnder"></td>
+                    <td id="totalCorners-beforeMatchTotalCorners" class="red"></td>
+                    <td id="totalCorners-beforeMatchOver"></td>
+                    <td id="totalCorners-beforeMatchUnder"></td>
                 </tr>
-                <tr id="inPlay">
+                <tr id="inPlay" style="display: none;">
                     <td style="background-color: green;"></td>
-                    <td id="inPlayOddsEuro1"></td>
-                    <td id="inPlayOddsEuroX"></td>
-                    <td id="inPlayOddsEuro2"></td>
-                    <td id="inPlayHandicap1"></td>
-                    <td id="inPlayOddsHandicap1"></td>
-                    <td id="inPlayHandicap2"></td>
-                    <td id="inPlayOddsHandicap2"></td>
-                    <td id="inPlayOverUnder1"></td>
-                    <td id="inPlayOddsOverUnder1"></td>
-                    <td id="inPlayOddsOverUnder2"></td>
-                    <td id="inPlayTotalCorners"></td>
-                    <td id="inPlayOddsTotalCorners1"></td>
-                    <td id="inPlayOddsTotalCorners2"></td>
+                    <td id="europeOdds-inPlayHome"></td>
+                    <td id="europeOdds-inPlayDraw"></td>
+                    <td id="europeOdds-inPlayAway"></td>
+                    <td id="handicap-inPlayHandicapHome" class="red"></td>
+                    <td id="handicap-inPlayHome"></td>
+                    <td id="handicap-inPlayHandicapAway" class="red"></td>
+                    <td id="handicap-inPlayAway"></td>
+                    <td id="overUnder-inPlayHandicap" class="red"></td>
+                    <td id="overUnder-inPlayOver"></td>
+                    <td id="overUnder-inPlayUnder"></td>
+                    <td id="totalCorners-inPlayTotalCorners" class="red"></td>
+                    <td id="totalCorners-inPlayOver"></td>
+                    <td id="totalCorners-inPlayUnder"></td>
                 </tr>
             </tbody>
           </table>

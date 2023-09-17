@@ -16,10 +16,10 @@ namespace ISport.Odds
         public async Task SendMessage(string? matchId, string? companyId)
         {
             PreMatchAndInPlayOddsMain preMatchAndInPlayOddsMain = await _preMatchAndInPlayOddsMainService.GetByMatchIdAsync(Source.InMemory, Utils.PreMatchAndInPlayOddsMainId, matchId, companyId);
-            TotalCorners totalCornersPrematch = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersPreMatchId, matchId, companyId);
+            TotalCorners totalCornersPreMatch = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersPreMatchId, matchId, companyId);
             TotalCorners totalCornersInPlay = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersInPlayId, matchId, companyId);
 
-            AggregatedOdds aggregatedOdds = new() { PreMatchAndInPlayOddsMain = preMatchAndInPlayOddsMain, TotalCornersPrematch = totalCornersPrematch , TotalCornersInPlay = totalCornersInPlay };
+            AggregatedOdds aggregatedOdds = new() { PreMatchAndInPlayOddsMain = preMatchAndInPlayOddsMain, TotalCornersPreMatch = totalCornersPreMatch , TotalCornersInPlay = totalCornersInPlay };
             await Clients.Caller.SendAsync("ReceiveMessage", aggregatedOdds);
         }
 
