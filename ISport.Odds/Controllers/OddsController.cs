@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ISport.Odds.Controllers
 {
@@ -40,6 +41,25 @@ namespace ISport.Odds.Controllers
         {
             TotalCorners totalCorners = await _totalCornersService.GetByMatchIdAsync(source, Utils.TotalCornersInPlayId, matchId, companyId);
             return Ok(totalCorners);
+        }
+
+        [HttpPut]
+        [Route("odds/cornerstotal/prematch/{matchId}")]
+        public async Task<IActionResult> FakeUpdateOddsCorner(string matchId)
+        {
+            TotalCorners cornerPreMatchMongoDB = _totalCornersService.GetByIdAsync(Utils.TotalCornersPreMatchId).Result;
+            foreach (var itemMongoDB in cornerPreMatchMongoDB.Data)
+            {
+                if (itemMongoDB.MatchId == matchId)
+                {
+                    TotalCornersOddsDetail oddsMongoDB = itemMongoDB.Odds;
+                    oddsMongoDB.TotalCorners = "10";
+                    oddsMongoDB.Over = "10";
+                    oddsMongoDB.Under = "10";
+                }
+            }
+            _totalCornersService.UpdateAsync(Utils.TotalCornersPreMatchId, cornerPreMatchMongoDB).Wait();
+            return Ok();
         }
     }
 }

@@ -105,10 +105,13 @@ connection.on("ReceiveMessage", function (message) {
     console.log(`${datetime}`);
 });
 
+connection.on("ReceiveCornerPreMatchChanges", function (message) {
+    console.log(message);
+});
+
 connection.start().then(function () {
     if (typeof matchId !== 'undefined' && matchId !== null && matchId !== '') {
         triggerHub();
-        setInterval(triggerHub, 5_000);
     }else{
         alert("Please provide value for query param 'matchId'");
     }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.FileSystemGlobbing;
+using System.Text.RegularExpressions;
 
 namespace ISport.Odds
 {
@@ -15,6 +17,13 @@ namespace ISport.Odds
 
         public async Task SendMessage(string? matchId, string? companyId)
         {
+            //if (InMemory.ConnectionByMatch.ContainsKey(matchId))
+            //    InMemory.ConnectionByMatch[matchId].Add(Context.ConnectionId);
+            //else
+            //    InMemory.ConnectionByMatch.Add(matchId, new List<string> { Context.ConnectionId });
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, matchId);
+
             PreMatchAndInPlayOddsMain preMatchAndInPlayOddsMain = await _preMatchAndInPlayOddsMainService.GetByMatchIdAsync(Source.InMemory, Utils.PreMatchAndInPlayOddsMainId, matchId, companyId);
             TotalCorners totalCornersPreMatch = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersPreMatchId, matchId, companyId);
             TotalCorners totalCornersInPlay = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersInPlayId, matchId, companyId);
@@ -32,6 +41,13 @@ namespace ISport.Odds
         public override Task OnDisconnectedAsync(Exception? exception)
         {
             //Console.WriteLine($"Client {Context.ConnectionId} disconnected at {DateTime.Now}");
+
+            //foreach (KeyValuePair<string, List<string>> entry in InMemory.ConnectionByMatch)
+            //{
+            //    string? connectionId = entry.Value.Where(x => x == Context.ConnectionId).FirstOrDefault();
+            //    if (!String.IsNullOrEmpty(connectionId))
+            //        entry.Value.Remove(connectionId);
+            //}
             return base.OnDisconnectedAsync(exception);
         }
     }
