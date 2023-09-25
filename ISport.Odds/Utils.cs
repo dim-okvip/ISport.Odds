@@ -69,7 +69,5 @@ namespace ISport.Odds
         public static PreMatchAndInPlayOddsMain PreMatchAndInPlayOddsMain = new PreMatchAndInPlayOddsMain();
         public static TotalCorners TotalCornersPreMatch = new TotalCorners();
         public static TotalCorners TotalCornersInPlay = new TotalCorners();
-
-        public static Dictionary<string, List<string>> ConnectionByMatch = new();
     }
 }

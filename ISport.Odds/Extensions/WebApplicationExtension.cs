@@ -14,11 +14,11 @@ namespace ISport.Odds.Extensions
                 ITotalCornersService totalCornersService = scope.ServiceProvider.GetRequiredService<ITotalCornersService>();
                 ILogger<Program> logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                 
-                InMemory.PreMatchAndInPlayOddsMain = preMatchAndInPlayOddsMainService.GetByIdAsync(Utils.PreMatchAndInPlayOddsMainId).Result;
-                InMemory.TotalCornersPreMatch = totalCornersService.GetByIdAsync(Utils.TotalCornersPreMatchId).Result;
-                InMemory.TotalCornersInPlay = totalCornersService.GetByIdAsync(Utils.TotalCornersInPlayId).Result;
+                InMemory.PreMatchAndInPlayOddsMain = preMatchAndInPlayOddsMainService.GetByIdAsync(Utils.PreMatchAndInPlayOddsMainId).Result ?? new();
+                InMemory.TotalCornersPreMatch = totalCornersService.GetByIdAsync(Utils.TotalCornersPreMatchId).Result ?? new();
+                InMemory.TotalCornersInPlay = totalCornersService.GetByIdAsync(Utils.TotalCornersInPlayId).Result ?? new();
 
-                logger.LogInformation($"Sync data from MongoDB to in-memory took {stopwatch.ElapsedMilliseconds} ms");
+                logger.LogInformation($"Loading data from MongoDB to in-memory took {stopwatch.ElapsedMilliseconds} ms");
                 stopwatch.Stop();
             }
             return app;

@@ -17,6 +17,7 @@ namespace ISport.Odds.Services
         private readonly string _urlTotalCornersPreMatch;
         private readonly string _urlTotalCornersInPlay;
         private readonly IHubContext<OddsHub> _hubContext;
+        private const int RETAIN_DAYS = 2;
 
         public SyncFromISportJob(
             IConfiguration configuration, 
@@ -40,7 +41,7 @@ namespace ISport.Odds.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            //_timerPreMatchAndInPlayOdds = new Timer(SyncPreMatchAndInPlayOdds, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalPreMatchAndInPlayOdds));
+            _timerPreMatchAndInPlayOdds = new Timer(SyncPreMatchAndInPlayOdds, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalPreMatchAndInPlayOdds));
             _timerTotalCorners = new Timer(SyncTotalCorners, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalTotalCorners));
         }
 
@@ -79,100 +80,115 @@ namespace ISport.Odds.Services
 
         private void SyncTotalCorners(object? state)
         {
-            using (IServiceScope scope = _serviceProvider.CreateScope())
+            try
             {
-                ITotalCornersService _totalCornersService = scope.ServiceProvider.GetRequiredService<ITotalCornersService>();
                 string resultPreMatch = Utils.SendGet(_urlTotalCornersPreMatch);
-                //string resultInPlay = Utils.SendGet(_urlTotalCornersInPlay);
+                string resultInPlay = Utils.SendGet(_urlTotalCornersInPlay);
 
                 TotalCorners? cornerPreMatchISport = JsonSerializer.Deserialize<TotalCorners>(resultPreMatch, Utils.JsonSerializerOptions);
-                //TotalCorners? cornerInPlayISport = JsonSerializer.Deserialize<TotalCorners>(resultInPlay, Utils.JsonSerializerOptions);
-
                 if (cornerPreMatchISport is not null && cornerPreMatchISport.Code is 0)
                 {
-                    cornerPreMatchISport.Id = Utils.TotalCornersPreMatchId;
-                    TotalCorners cornerPreMatchMongoDB = _totalCornersService.GetByIdAsync(Utils.TotalCornersPreMatchId).Result;
-
-                    if (cornerPreMatchMongoDB is null)
-                        _totalCornersService.InsertAsync(cornerPreMatchISport).Wait();
-                    else
-                    {
-                        Dictionary<string, List<TotalCornersDetail>> totalCornerDetailChanges = new();
-                        foreach (var itemISport in cornerPreMatchISport.Data)
-                        {
-                            DateTime datetimeMatch = new DateTime(1970, 01, 01, 7, 0, 0) + TimeSpan.FromSeconds(itemISport.ChangeTime);
-                            TimeSpan elaspedTime = DateTime.Now.Subtract(datetimeMatch);
-                            if (elaspedTime.TotalDays < 1 && 
-                                !cornerPreMatchMongoDB.Data.Any(itemMongoDB => itemMongoDB.MatchId == itemISport.MatchId && itemMongoDB.CompanyId == itemISport.CompanyId))
-                            {
-                                cornerPreMatchMongoDB.Data.Add(itemISport);
-                            }
-                        }
-
-                        for (int i = 0; i < cornerPreMatchMongoDB.Data.Count; i++)
-                        {
-                            var itemMongoDB = cornerPreMatchMongoDB.Data[i];
-
-                            DateTime datetimeMatch = new DateTime(1970, 01, 01, 7, 0, 0) + TimeSpan.FromSeconds(itemMongoDB.ChangeTime);
-                            TimeSpan elaspedTime = DateTime.Now.Subtract(datetimeMatch);
-                            if (elaspedTime.TotalDays >= 1)
-                            {
-                                cornerPreMatchMongoDB.Data.RemoveAt(i);
-                                continue;
-                            }
-
-                            foreach (var itemISport in cornerPreMatchISport.Data)
-                            {
-                                if (itemMongoDB.MatchId == itemISport.MatchId && itemMongoDB.CompanyId == itemISport.CompanyId)
-                                {
-                                    TotalCornersOddsDetail oddsMongoDB = itemMongoDB.Odds;
-                                    TotalCornersOddsDetail oddsISport = itemISport.Odds;
-                                    if (oddsMongoDB.TotalCorners != oddsISport.TotalCorners ||
-                                        oddsMongoDB.Over != oddsISport.Over ||
-                                        oddsMongoDB.Under != oddsISport.Under)
-                                    {
-                                        itemMongoDB.Odds = oddsISport;
-                                        if (totalCornerDetailChanges.ContainsKey(itemMongoDB.MatchId))
-                                            totalCornerDetailChanges[itemMongoDB.MatchId].Add(itemISport);
-                                        else
-                                            totalCornerDetailChanges.Add(itemMongoDB.MatchId, new List<TotalCornersDetail>() { itemISport });
-                                    }
-                                }
-                            }
-                        }
-
-                        if (totalCornerDetailChanges.Count > 0)
-                        {
-                            foreach (var item in totalCornerDetailChanges)
-                            {
-                                _hubContext.Clients.Group(item.Key).SendAsync("ReceiveCornerPreMatchChanges", item.Value);
-                            }
-                        }
-                        _totalCornersService.UpdateAsync(Utils.TotalCornersPreMatchId, cornerPreMatchMongoDB).Wait();
-                    }
-
-                    InMemory.TotalCornersPreMatch = cornerPreMatchISport;
-                   
+                    LoadCornersToDatabaseAndMemory(cornerPreMatchISport, Utils.TotalCornersPreMatchId);
                     _logger.LogInformation($"{DateTime.Now} Synchronization total corners (pre-match) data from ISport Odds API every {_intervalTotalCorners} second succeed!");
                 }
                 else
                     _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (pre-match) data!");
 
-                //if (cornerInPlayISport is not null && cornerInPlayISport.Code is 0)
-                //{
-                //    cornerInPlayISport.Id = Utils.TotalCornersInPlayId;
-                //    TotalCorners cornerInPlayMongoDB = _totalCornersService.GetByIdAsync(cornerInPlayISport.Id).Result;
-                //    if (cornerInPlayMongoDB is null)
-                //        _totalCornersService.InsertAsync(cornerInPlayISport).Wait();
-                //    else
-                //        _totalCornersService.UpdateAsync(cornerInPlayISport.Id, cornerInPlayISport).Wait();
+                TotalCorners? cornerInPlayISport = JsonSerializer.Deserialize<TotalCorners>(resultInPlay, Utils.JsonSerializerOptions);
+                if (cornerInPlayISport is not null && cornerInPlayISport.Code is 0)
+                {
+                    LoadCornersToDatabaseAndMemory(cornerInPlayISport, Utils.TotalCornersInPlayId);
+                    _logger.LogInformation($"{DateTime.Now} Synchronization total corners (in-play) data from ISport Odds API every {_intervalTotalCorners} second succeed!");
+                }
+                else
+                    _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (in-play) data!");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+        }
 
-                //    InMemory.TotalCornersInPlay = cornerInPlayISport;
+        private void LoadCornersToDatabaseAndMemory(TotalCorners? cornerISport, string totalCornersId)
+        {
+            using (IServiceScope scope = _serviceProvider.CreateScope())
+            {
+                ITotalCornersService totalCornersService = scope.ServiceProvider.GetRequiredService<ITotalCornersService>();
+                TotalCorners cornerMongoDB = totalCornersService.GetByIdAsync(totalCornersId).Result;
+                if (cornerMongoDB is null)
+                {
+                    cornerISport.Id = totalCornersId;
+                    totalCornersService.InsertAsync(cornerISport).Wait();
+                }
+                else
+                {
+                    Dictionary<string, List<TotalCornersDetail>> totalCornerDetailChanges = new();
+                    foreach (var itemISport in cornerISport.Data)
+                    {
+                        DateTime datetimeMatch = new DateTime(1970, 01, 01, 7, 0, 0) + TimeSpan.FromSeconds(itemISport.ChangeTime);
+                        TimeSpan elaspedTime = DateTime.Now.Subtract(datetimeMatch);
+                        if (elaspedTime.TotalDays < RETAIN_DAYS &&
+                            !cornerMongoDB.Data.Any(itemMongoDB => itemMongoDB.MatchId == itemISport.MatchId && itemMongoDB.CompanyId == itemISport.CompanyId))
+                        {
+                            cornerMongoDB.Data.Add(itemISport);
+                        }
+                    }
 
-                //    _logger.LogInformation($"{DateTime.Now} Synchronization total corners (in-play) data from ISport Odds API every {_intervalTotalCorners} second succeed!");
-                //}
-                //else
-                //    _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (in-play) data!");
+                    for (int i = 0; i < cornerMongoDB.Data.Count; i++)
+                    {
+                        var itemMongoDB = cornerMongoDB.Data[i];
+
+                        DateTime datetimeMatch = new DateTime(1970, 01, 01, 7, 0, 0) + TimeSpan.FromSeconds(itemMongoDB.ChangeTime);
+                        TimeSpan elaspedTime = DateTime.Now.Subtract(datetimeMatch);
+                        if (elaspedTime.TotalDays >= RETAIN_DAYS)
+                        {
+                            cornerMongoDB.Data.RemoveAt(i);
+                            continue;
+                        }
+
+                        foreach (var itemISport in cornerISport.Data)
+                        {
+                            if (itemMongoDB.MatchId == itemISport.MatchId && itemMongoDB.CompanyId == itemISport.CompanyId)
+                            {
+                                TotalCornersOddsDetail oddsMongoDB = itemMongoDB.Odds;
+                                TotalCornersOddsDetail oddsISport = itemISport.Odds;
+                                if (oddsMongoDB.TotalCorners != oddsISport.TotalCorners ||
+                                    oddsMongoDB.Over != oddsISport.Over ||
+                                    oddsMongoDB.Under != oddsISport.Under)
+                                {
+                                    itemMongoDB.Odds = oddsISport;
+                                    if (totalCornerDetailChanges.ContainsKey(itemMongoDB.MatchId))
+                                        totalCornerDetailChanges[itemMongoDB.MatchId].Add(itemISport);
+                                    else
+                                        totalCornerDetailChanges.Add(itemMongoDB.MatchId, new List<TotalCornersDetail>() { itemISport });
+                                }
+                            }
+                        }
+                    }
+
+                    totalCornersService.UpdateAsync(totalCornersId, cornerMongoDB).Wait();
+
+                    string clientMethod = String.Empty;
+                    if (totalCornersId == Utils.TotalCornersPreMatchId)
+                    {
+                        InMemory.TotalCornersPreMatch = cornerMongoDB ?? cornerISport;
+                        clientMethod = "ReceiveCornerPreMatchChanges";
+                    }
+
+                    if (totalCornersId == Utils.TotalCornersInPlayId)
+                    {
+                        InMemory.TotalCornersInPlay = cornerMongoDB ?? cornerISport;
+                        clientMethod = "ReceiveCornerInPlayChanges";
+                    }
+
+                    if (totalCornerDetailChanges.Count > 0)
+                    {
+                        foreach (var item in totalCornerDetailChanges)
+                        {
+                            _hubContext.Clients.Group(item.Key).SendAsync(clientMethod, item.Value);
+                        }
+                    }
+                }
             }
         }
 
