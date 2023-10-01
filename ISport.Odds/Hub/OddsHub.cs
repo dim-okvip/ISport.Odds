@@ -13,7 +13,7 @@ namespace ISport.Odds
             _totalCornersService = totalCornersService;
         }
 
-        public async Task SendMessage(string? matchId, string? companyId)
+        public async Task SendInitializationMessage(string? matchId, string? companyId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, matchId);
 
@@ -22,7 +22,7 @@ namespace ISport.Odds
             TotalCorners totalCornersInPlay = await _totalCornersService.GetByMatchIdAsync(Source.InMemory, Utils.TotalCornersInPlayId, matchId, companyId);
 
             AggregatedOdds aggregatedOdds = new() { PreMatchAndInPlayOddsMain = preMatchAndInPlayOddsMain, TotalCornersPreMatch = totalCornersPreMatch , TotalCornersInPlay = totalCornersInPlay };
-            await Clients.Caller.SendAsync("ReceiveMessage", aggregatedOdds);
+            await Clients.Caller.SendAsync("ReceiveInitializationMessage", aggregatedOdds);
         }
 
         public override Task OnConnectedAsync()

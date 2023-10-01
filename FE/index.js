@@ -12,7 +12,7 @@ const InplayOdds = '3';
 
 var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7067/oddsHub").build();
 
-connection.on("ReceiveMessage", function (message) {
+connection.on("ReceiveInitializationMessage", function (message) {
     var preMatchAndInPlayOddsMain = message.preMatchAndInPlayOddsMain.data;
     if (preMatchAndInPlayOddsMain.europeOdds.length > 0 && preMatchAndInPlayOddsMain.handicap.length > 0 && preMatchAndInPlayOddsMain.overUnder.length > 0) {
         var euroOdds = preMatchAndInPlayOddsMain.europeOdds[0].split(',');
@@ -98,6 +98,10 @@ connection.on("ReceiveMessage", function (message) {
     }
 });
 
+connection.on("ReceiveOddsChanges", function (message) {
+    
+});
+
 connection.on("ReceiveCornerPreMatchChanges", function (message) {
     if (message.length > 0) {
         document.getElementById('totalCorners-initialTotalCorners').innerHTML = message[0].odds.totalCorners;
@@ -142,7 +146,7 @@ connection.on("ReceiveCornerInPlayChanges", function (message) {
 
 connection.start().then(function () {
     if (typeof matchId !== 'undefined' && matchId !== null && matchId !== '') {
-        connection.invoke("SendMessage", matchId, companyId)
+        connection.invoke("SendInitializationMessage", matchId, companyId)
                    .then(function () {})
                    .catch(function (err) {
                         return console.error(err.toString());
