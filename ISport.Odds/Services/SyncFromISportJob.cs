@@ -1,7 +1,4 @@
-﻿using ISport.Odds.Models;
-using Microsoft.AspNetCore.SignalR;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace ISport.Odds.Services
 {
@@ -44,7 +41,7 @@ namespace ISport.Odds.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _timerPreMatchAndInPlayOdds = new Timer(SyncPreMatchAndInPlayOdds, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalPreMatchAndInPlayOdds));
-            //_timerTotalCorners = new Timer(SyncTotalCorners, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalTotalCorners));
+            _timerTotalCorners = new Timer(SyncTotalCorners, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalTotalCorners));
         }
 
         private void SyncPreMatchAndInPlayOdds(object? state)
@@ -60,16 +57,13 @@ namespace ISport.Odds.Services
 
                     if (oddsISport is not null && oddsISport.Code is 0)
                     {
-                        PreMatchAndInPlayOddsMain oddsMongoDB = _preMatchAndInPlayOddsMainService.GetByIdAsync(Utils.PreMatchAndInPlayOddsMainId).Result;
-                        if (oddsMongoDB is null)
-                        {
-                            oddsISport.Id = Utils.PreMatchAndInPlayOddsMainId;
+                        oddsISport.Id = Utils.PreMatchAndInPlayOddsMainId;
+                        if (InMemory.PreMatchAndInPlayOddsMain.Id is null)
                             _preMatchAndInPlayOddsMainService.InsertAsync(oddsISport).Wait();
-                        }
                         else
                         {
                             Dictionary<string, string> dicHandicapMongoDB = new();
-                            oddsMongoDB.Data.Handicap.ForEach(x => dicHandicapMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
+                            InMemory.PreMatchAndInPlayOddsMain.Data.Handicap.ForEach(x => dicHandicapMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
 
                             oddsISport.Data.Handicap.ForEach(itemISport =>
                             {
@@ -87,7 +81,7 @@ namespace ISport.Odds.Services
                             });
 
                             Dictionary<string, string> dicEuropeOddsMongoDB = new();
-                            oddsMongoDB.Data.EuropeOdds.ForEach(x => dicEuropeOddsMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
+                            InMemory.PreMatchAndInPlayOddsMain.Data.EuropeOdds.ForEach(x => dicEuropeOddsMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
 
                             oddsISport.Data.EuropeOdds.ForEach(itemISport =>
                             {
@@ -105,7 +99,7 @@ namespace ISport.Odds.Services
                             });
 
                             Dictionary<string, string> dicOverUnderMongoDB = new();
-                            oddsMongoDB.Data.OverUnder.ForEach(x => dicOverUnderMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
+                            InMemory.PreMatchAndInPlayOddsMain.Data.OverUnder.ForEach(x => dicOverUnderMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
 
                             oddsISport.Data.OverUnder.ForEach(itemISport =>
                             {
@@ -183,10 +177,10 @@ namespace ISport.Odds.Services
             using (IServiceScope scope = _serviceProvider.CreateScope())
             {
                 ITotalCornersService totalCornersService = scope.ServiceProvider.GetRequiredService<ITotalCornersService>();
-                TotalCorners cornerMongoDB = totalCornersService.GetByIdAsync(totalCornersId).Result;
+                TotalCorners cornerMongoDBInMemory = totalCornersId == Utils.TotalCornersPreMatchId ? InMemory.TotalCornersPreMatch : InMemory.TotalCornersInPlay;
                 Dictionary<string, List<TotalCornersDetail>> totalCornerDetailChanges = new();
 
-                if (cornerMongoDB is null)
+                if (cornerMongoDBInMemory is null)
                 {
                     cornerISport.Id = totalCornersId;
                     totalCornersService.InsertAsync(cornerISport).Wait();
@@ -198,21 +192,21 @@ namespace ISport.Odds.Services
                         DateTime datetimeMatch = new DateTime(1970, 01, 01, 7, 0, 0) + TimeSpan.FromSeconds(itemISport.ChangeTime);
                         TimeSpan elaspedTime = DateTime.Now.Subtract(datetimeMatch);
                         if (elaspedTime.TotalDays < RETAIN_DAYS &&
-                            !cornerMongoDB.Data.Any(itemMongoDB => itemMongoDB.MatchId == itemISport.MatchId && itemMongoDB.CompanyId == itemISport.CompanyId))
+                            !cornerMongoDBInMemory.Data.Any(itemMongoDB => itemMongoDB.MatchId == itemISport.MatchId && itemMongoDB.CompanyId == itemISport.CompanyId))
                         {
-                            cornerMongoDB.Data.Add(itemISport);
+                            cornerMongoDBInMemory.Data.Add(itemISport);
                         }
                     }
 
-                    for (int i = 0; i < cornerMongoDB.Data.Count; i++)
+                    for (int i = 0; i < cornerMongoDBInMemory.Data.Count; i++)
                     {
-                        var itemMongoDB = cornerMongoDB.Data[i];
+                        var itemMongoDB = cornerMongoDBInMemory.Data[i];
 
                         DateTime datetimeMatch = new DateTime(1970, 01, 01, 7, 0, 0) + TimeSpan.FromSeconds(itemMongoDB.ChangeTime);
                         TimeSpan elaspedTime = DateTime.Now.Subtract(datetimeMatch);
                         if (elaspedTime.TotalDays >= RETAIN_DAYS)
                         {
-                            cornerMongoDB.Data.RemoveAt(i);
+                            cornerMongoDBInMemory.Data.RemoveAt(i);
                             continue;
                         }
 
@@ -236,22 +230,10 @@ namespace ISport.Odds.Services
                         }
                     }
 
-                    totalCornersService.UpdateAsync(totalCornersId, cornerMongoDB).Wait();
+                    totalCornersService.UpdateAsync(totalCornersId, cornerMongoDBInMemory).Wait();
                 }
 
-                string clientMethod = String.Empty;
-                if (totalCornersId == Utils.TotalCornersPreMatchId)
-                {
-                    InMemory.TotalCornersPreMatch = cornerISport;
-                    clientMethod = "ReceiveCornerPreMatchChanges";
-                }
-
-                if (totalCornersId == Utils.TotalCornersInPlayId)
-                {
-                    InMemory.TotalCornersInPlay = cornerISport;
-                    clientMethod = "ReceiveCornerInPlayChanges";
-                }
-
+                string clientMethod = totalCornersId == Utils.TotalCornersPreMatchId ? "ReceiveCornerPreMatchChanges" : "ReceiveCornerInPlayChanges";
                 if (totalCornerDetailChanges.Count > 0)
                 {
                     foreach (var item in totalCornerDetailChanges)
