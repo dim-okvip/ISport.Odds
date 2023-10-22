@@ -15,7 +15,7 @@
         public async Task<TotalCorners> GetByIdAsync(string id)
             => await _repository.GetByIdAsync(id);
 
-        public async Task<TotalCorners> GetByMatchIdAsync(Source source, string id, string matchId, string? companyId)
+        public async Task<TotalCorners> GetByMatchIdAsync(Source source, string id, string? matchId, string? companyId)
         {
             TotalCorners odds = new();
             switch (source)
@@ -38,7 +38,7 @@
             return odds;
         }
 
-        private List<TotalCornersDetail> Filter(List<TotalCornersDetail> list, string matchId, string companyId)
+        private List<TotalCornersDetail> Filter(List<TotalCornersDetail> list, string? matchId, string? companyId)
         {
             List<TotalCornersDetail> result = list;
             if (!String.IsNullOrEmpty(matchId))

@@ -15,7 +15,7 @@
         public List<string> Handicap { get; set; } = new();
         public List<string> EuropeOdds { get; set; } = new();
         public List<string> OverUnder { get; set; } = new();
-        //public List<string> HandicapHalf { get; set; } = new();
-        //public List<string> OverUnderHalf { get; set; } = new();
+        public List<string> HandicapHalf { get; set; } = new();
+        public List<string> OverUnderHalf { get; set; } = new();
     }
 }

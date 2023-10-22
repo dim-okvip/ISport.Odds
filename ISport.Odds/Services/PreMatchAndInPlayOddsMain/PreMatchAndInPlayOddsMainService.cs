@@ -15,7 +15,7 @@
         public async Task<PreMatchAndInPlayOddsMain> GetByIdAsync(string id)
             => await _repository.GetByIdAsync(id);
 
-        public async Task<PreMatchAndInPlayOddsMain> GetByMatchIdAsync(Source source, string id, string matchId, string companyId)
+        public async Task<PreMatchAndInPlayOddsMain> GetByMatchIdAsync(Source source, string id, string? matchId, string? companyId)
         {
             PreMatchAndInPlayOddsMain odds = new();
             switch (source)
@@ -36,13 +36,13 @@
                 odds.Data.Handicap = Filter(odds.Data.Handicap, matchId, companyId);
                 odds.Data.EuropeOdds = Filter(odds.Data.EuropeOdds, matchId, companyId);
                 odds.Data.OverUnder = Filter(odds.Data.OverUnder, matchId, companyId);
-                //odds.Data.HandicapHalf = Filter(odds.Data.HandicapHalf, matchId, companyId);
-                //odds.Data.OverUnderHalf = Filter(odds.Data.OverUnderHalf, matchId, companyId);
+                odds.Data.HandicapHalf = Filter(odds.Data.HandicapHalf, matchId, companyId);
+                odds.Data.OverUnderHalf = Filter(odds.Data.OverUnderHalf, matchId, companyId);
             }
             return odds;
         }
 
-        private List<string> Filter(List<string> list, string matchId, string? companyId)
+        private List<string> Filter(List<string> list, string? matchId, string? companyId)
         {
             List<string> result = list;
             if (!String.IsNullOrEmpty(matchId))

@@ -10,92 +10,104 @@
 </head>
 <body>
     <div class="container">
-        <hr>
-        <table class="table">
-            <thead>
-                <th style="background-color: blue;width: 15px"></th>
-                <th>Tỉ lệ cược mở màn</th>
-                <th style="background-color: orange;width: 15px"></th>
-                <th>Tỉ lệ cược trước trận đấu</th>
-                <th style="background-color: green;width: 15px"></th>
-                <th>Tỉ lệ cược trong trận</th>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <table class="table table-bordered">
-            <thead>
-                <th style="width: 15px"></th>
-                <th>1</th>
-                <th>X</th>
-                <th>2</th>
-                <th colspan="4">Điểm chấp</th>
-                <th>Bàn thắng</th>
-                <th>Cao hơn</th>
-                <th>Thấp hơn</th>
-                <th>Phạt góc</th>
-                <th>Cao hơn</th>
-                <th>Thấp hơn</th>
-            </thead>
-            <tbody>
-                <tr id="initial">
-                    <td style="background-color: blue;"></td>
-                    <td id="europeOdds-initialHome"></td>
-                    <td id="europeOdds-initialDraw"></td>
-                    <td id="europeOdds-initialAway"></td>
-                    <td id="handicap-initialHandicapHome" class="red"></td>
-                    <td id="handicap-initialHome"></td>
-                    <td id="handicap-initialHandicapAway" class="red"></td>
-                    <td id="handicap-initialAway"></td>
-                    <td id="overUnder-initialHandicap" class="red"></td>
-                    <td id="overUnder-initialOver"></td>
-                    <td id="overUnder-initialUnder"></td>
-                    <td id="totalCorners-initialTotalCorners" class="red"></td>
-                    <td id="totalCorners-initialOver"></td>
-                    <td id="totalCorners-initialUnder"></td>
-                </tr>
-                <tr id="beforeMatch" style="display: none;">
-                    <td style="background-color: orange;"></td>
-                    <td id="europeOdds-beforeMatchHome"></td>
-                    <td id="europeOdds-beforeMatchDraw"></td>
-                    <td id="europeOdds-beforeMatchAway"></td>
-                    <td id="handicap-beforeMatchHandicapHome" class="red"></td>
-                    <td id="handicap-beforeMatchHome"></td>
-                    <td id="handicap-beforeMatchHandicapAway" class="red"></td>
-                    <td id="handicap-beforeMatchAway"></td>
-                    <td id="overUnder-beforeMatchHandicap" class="red"></td>
-                    <td id="overUnder-beforeMatchOver"></td>
-                    <td id="overUnder-beforeMatchUnder"></td>
-                    <td id="totalCorners-beforeMatchTotalCorners" class="red"></td>
-                    <td id="totalCorners-beforeMatchOver"></td>
-                    <td id="totalCorners-beforeMatchUnder"></td>
-                </tr>
-                <tr id="inPlay" style="display: none;">
-                    <td style="background-color: green;"></td>
-                    <td id="europeOdds-inPlayHome"></td>
-                    <td id="europeOdds-inPlayDraw"></td>
-                    <td id="europeOdds-inPlayAway"></td>
-                    <td id="handicap-inPlayHandicapHome" class="red"></td>
-                    <td id="handicap-inPlayHome"></td>
-                    <td id="handicap-inPlayHandicapAway" class="red"></td>
-                    <td id="handicap-inPlayAway"></td>
-                    <td id="overUnder-inPlayHandicap" class="red"></td>
-                    <td id="overUnder-inPlayOver"></td>
-                    <td id="overUnder-inPlayUnder"></td>
-                    <td id="totalCorners-inPlayTotalCorners" class="red"></td>
-                    <td id="totalCorners-inPlayOver"></td>
-                    <td id="totalCorners-inPlayUnder"></td>
-                </tr>
-            </tbody>
-          </table>
-        <div class="row p-1">
-            <div class="col-6">
-                <ul id="messagesList"></ul>
-            </div>
+        <div id="oddsByMatch" style="display: none;">
+            <hr>
+            <table class="table">
+                <thead>
+                    <th style="background-color: blue;width: 15px"></th>
+                    <th>Tỉ lệ cược mở màn</th>
+                    <th style="background-color: orange;width: 15px"></th>
+                    <th>Tỉ lệ cược trước trận đấu</th>
+                    <th style="background-color: green;width: 15px"></th>
+                    <th>Tỉ lệ cược trong trận</th>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <table class="table table-bordered">
+                <thead>
+                    <th style="width: 15px"></th>
+                    <th>1</th>
+                    <th>X</th>
+                    <th>2</th>
+                    <th colspan="4">Điểm chấp</th>
+                    <th>Bàn thắng</th>
+                    <th>Cao hơn</th>
+                    <th>Thấp hơn</th>
+                    <th>Phạt góc</th>
+                    <th>Cao hơn</th>
+                    <th>Thấp hơn</th>
+                </thead>
+                <tbody>
+                    <tr id="initial">
+                        <td style="background-color: blue;"></td>
+                        <td id="europeOdds-initialHome"></td>
+                        <td id="europeOdds-initialDraw"></td>
+                        <td id="europeOdds-initialAway"></td>
+                        <td id="handicap-initialHandicapHome" class="red"></td>
+                        <td id="handicap-initialHome"></td>
+                        <td id="handicap-initialHandicapAway" class="red"></td>
+                        <td id="handicap-initialAway"></td>
+                        <td id="overUnder-initialHandicap" class="red"></td>
+                        <td id="overUnder-initialOver"></td>
+                        <td id="overUnder-initialUnder"></td>
+                        <td id="totalCorners-initialTotalCorners" class="red"></td>
+                        <td id="totalCorners-initialOver"></td>
+                        <td id="totalCorners-initialUnder"></td>
+                    </tr>
+                    <tr id="beforeMatch" style="display: none;">
+                        <td style="background-color: orange;"></td>
+                        <td id="europeOdds-beforeMatchHome"></td>
+                        <td id="europeOdds-beforeMatchDraw"></td>
+                        <td id="europeOdds-beforeMatchAway"></td>
+                        <td id="handicap-beforeMatchHandicapHome" class="red"></td>
+                        <td id="handicap-beforeMatchHome"></td>
+                        <td id="handicap-beforeMatchHandicapAway" class="red"></td>
+                        <td id="handicap-beforeMatchAway"></td>
+                        <td id="overUnder-beforeMatchHandicap" class="red"></td>
+                        <td id="overUnder-beforeMatchOver"></td>
+                        <td id="overUnder-beforeMatchUnder"></td>
+                        <td id="totalCorners-beforeMatchTotalCorners" class="red"></td>
+                        <td id="totalCorners-beforeMatchOver"></td>
+                        <td id="totalCorners-beforeMatchUnder"></td>
+                    </tr>
+                    <tr id="inPlay" style="display: none;">
+                        <td style="background-color: green;"></td>
+                        <td id="europeOdds-inPlayHome"></td>
+                        <td id="europeOdds-inPlayDraw"></td>
+                        <td id="europeOdds-inPlayAway"></td>
+                        <td id="handicap-inPlayHandicapHome" class="red"></td>
+                        <td id="handicap-inPlayHome"></td>
+                        <td id="handicap-inPlayHandicapAway" class="red"></td>
+                        <td id="handicap-inPlayAway"></td>
+                        <td id="overUnder-inPlayHandicap" class="red"></td>
+                        <td id="overUnder-inPlayOver"></td>
+                        <td id="overUnder-inPlayUnder"></td>
+                        <td id="totalCorners-inPlayTotalCorners" class="red"></td>
+                        <td id="totalCorners-inPlayOver"></td>
+                        <td id="totalCorners-inPlayUnder"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="allOdds">
+            <table class="table" id="tableAllOdds">
+                <thead>
+                    <th>Trận đấu</th>
+                    <th colspan="2">Cược chấp toàn trận</th>
+                    <th>Tài xỉu toàn trận</th>
+                    <th>1X2 toàn trận</th>
+                    <th>Cược chấp hiệp 1</th>
+                    <th>Tài xỉu hiệp 1</th>
+                    <th>1X2 hiệp 1</th>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
         </div>
     </div>
-
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="signalr.js"></script>
     <script src="index.js"></script>

@@ -41,7 +41,7 @@ namespace ISport.Odds.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _timerPreMatchAndInPlayOdds = new Timer(SyncPreMatchAndInPlayOdds, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalPreMatchAndInPlayOdds));
-            _timerTotalCorners = new Timer(SyncTotalCorners, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalTotalCorners));
+            //_timerTotalCorners = new Timer(SyncTotalCorners, null, TimeSpan.Zero, TimeSpan.FromSeconds(_intervalTotalCorners));
         }
 
         private void SyncPreMatchAndInPlayOdds(object? state)
@@ -53,7 +53,8 @@ namespace ISport.Odds.Services
                     IPreMatchAndInPlayOddsMainService _preMatchAndInPlayOddsMainService = scope.ServiceProvider.GetRequiredService<IPreMatchAndInPlayOddsMainService>();
                     string result = Utils.SendGet(_urlPreMatchAndInPlayOddsMain);
                     PreMatchAndInPlayOddsMain? oddsISport = JsonSerializer.Deserialize<PreMatchAndInPlayOddsMain>(result, Utils.JsonSerializerOptions);
-                    Dictionary<string, OddsType> oddsChanges = new();
+
+                    Dictionary<string, OddsType> oddsChangesByMatch = new();
 
                     if (oddsISport is not null && oddsISport.Code is 0)
                     {
@@ -73,10 +74,10 @@ namespace ISport.Odds.Services
                                 string? itemMongoDB = dicHandicapMongoDB.ContainsKey(key) ? dicHandicapMongoDB[key] : String.Empty;
                                 if (!itemISport.Equals(itemMongoDB))
                                 {
-                                    if (oddsChanges.ContainsKey(matchId))
-                                        oddsChanges[matchId].Handicap.Add(itemISport);
+                                    if (oddsChangesByMatch.ContainsKey(matchId))
+                                        oddsChangesByMatch[matchId].Handicap.Add(itemISport);
                                     else
-                                        oddsChanges.Add(matchId, new OddsType() { Handicap = new List<string>() { (itemISport) } });
+                                        oddsChangesByMatch.Add(matchId, new OddsType() { Handicap = new List<string>() { (itemISport) } });
                                 }
                             });
 
@@ -91,10 +92,10 @@ namespace ISport.Odds.Services
                                 string? itemMongoDB = dicEuropeOddsMongoDB.ContainsKey(key) ? dicEuropeOddsMongoDB[key] : String.Empty;
                                 if (!itemISport.Equals(itemMongoDB))
                                 {
-                                    if (oddsChanges.ContainsKey(matchId))
-                                        oddsChanges[matchId].EuropeOdds.Add(itemISport);
+                                    if (oddsChangesByMatch.ContainsKey(matchId))
+                                        oddsChangesByMatch[matchId].EuropeOdds.Add(itemISport);
                                     else
-                                        oddsChanges.Add(matchId, new OddsType() { EuropeOdds = new List<string>() { (itemISport) } });
+                                        oddsChangesByMatch.Add(matchId, new OddsType() { EuropeOdds = new List<string>() { (itemISport) } });
                                 }
                             });
 
@@ -109,10 +110,46 @@ namespace ISport.Odds.Services
                                 string? itemMongoDB = dicOverUnderMongoDB.ContainsKey(key) ? dicOverUnderMongoDB[key] : String.Empty;
                                 if (!itemISport.Equals(itemMongoDB))
                                 {
-                                    if (oddsChanges.ContainsKey(matchId))
-                                        oddsChanges[matchId].OverUnder.Add(itemISport);
+                                    if (oddsChangesByMatch.ContainsKey(matchId))
+                                        oddsChangesByMatch[matchId].OverUnder.Add(itemISport);
                                     else
-                                        oddsChanges.Add(matchId, new OddsType() { OverUnder = new List<string>() { (itemISport) } });
+                                        oddsChangesByMatch.Add(matchId, new OddsType() { OverUnder = new List<string>() { (itemISport) } });
+                                }
+                            });
+
+                            Dictionary<string, string> dicHandicapHalfMongoDB = new();
+                            InMemory.PreMatchAndInPlayOddsMain.Data.HandicapHalf.ForEach(x => dicHandicapHalfMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
+
+                            oddsISport.Data.HandicapHalf.ForEach(itemISport =>
+                            {
+                                string matchId = itemISport.Split(",")[0];
+                                string key = $"{matchId},{itemISport.Split(",")[1]}";
+
+                                string? itemMongoDB = dicHandicapHalfMongoDB.ContainsKey(key) ? dicHandicapHalfMongoDB[key] : String.Empty;
+                                if (!itemISport.Equals(itemMongoDB))
+                                {
+                                    if (oddsChangesByMatch.ContainsKey(matchId))
+                                        oddsChangesByMatch[matchId].HandicapHalf.Add(itemISport);
+                                    else
+                                        oddsChangesByMatch.Add(matchId, new OddsType() { HandicapHalf = new List<string>() { (itemISport) } });
+                                }
+                            });
+
+                            Dictionary<string, string> dicOverUnderHalfMongoDB = new();
+                            InMemory.PreMatchAndInPlayOddsMain.Data.OverUnderHalf.ForEach(x => dicOverUnderHalfMongoDB.Add($"{x.Split(",")[0]},{x.Split(",")[1]}", x));
+
+                            oddsISport.Data.OverUnderHalf.ForEach(itemISport =>
+                            {
+                                string matchId = itemISport.Split(",")[0];
+                                string key = $"{matchId},{itemISport.Split(",")[1]}";
+
+                                string? itemMongoDB = dicOverUnderHalfMongoDB.ContainsKey(key) ? dicOverUnderHalfMongoDB[key] : String.Empty;
+                                if (!itemISport.Equals(itemMongoDB))
+                                {
+                                    if (oddsChangesByMatch.ContainsKey(matchId))
+                                        oddsChangesByMatch[matchId].OverUnderHalf.Add(itemISport);
+                                    else
+                                        oddsChangesByMatch.Add(matchId, new OddsType() { OverUnderHalf = new List<string>() { (itemISport) } });
                                 }
                             });
 
@@ -121,18 +158,19 @@ namespace ISport.Odds.Services
 
                         InMemory.PreMatchAndInPlayOddsMain = oddsISport;
 
-                        if (oddsChanges.Count > 0)
+                        if (oddsChangesByMatch.Count > 0)
                         {
-                            foreach (var item in oddsChanges)
+                            _hubContext.Clients.All.SendAsync("ReceiveOddsChangesAllMatches", oddsChangesByMatch);
+                            foreach (var item in oddsChangesByMatch)
                             {
-                                _hubContext.Clients.Group(item.Key).SendAsync("ReceiveOddsChanges", item.Value);
+                                _hubContext.Clients.Group(item.Key).SendAsync("ReceiveOddsChangesByMatch", item.Value);
                             }
                         }
 
-                        _logger.LogInformation($"{DateTime.Now} Synchronization pre-match and in-play odds (main) data from ISport Odds API every {_intervalPreMatchAndInPlayOdds} second succeed!");
+                        _logger.LogInformation($"{DateTime.Now} Synchronization pre-match and in-play odds (main) data from ISport Odds API every {_intervalPreMatchAndInPlayOdds} second succeed");
                     }
                     else
-                        _logger.LogInformation($"{DateTime.Now} ISport API return empty pre-match and in-play odds (main) data!");
+                        _logger.LogInformation($"{DateTime.Now} ISport API return empty pre-match and in-play odds (main) data");
                 }
             }
             catch (Exception ex)
@@ -152,19 +190,19 @@ namespace ISport.Odds.Services
                 if (cornerPreMatchISport is not null && cornerPreMatchISport.Code is 0)
                 {
                     LoadCornersToDatabaseAndMemory(cornerPreMatchISport, Utils.TotalCornersPreMatchId);
-                    _logger.LogInformation($"{DateTime.Now} Synchronization total corners (pre-match) data from ISport Odds API every {_intervalTotalCorners} second succeed!");
+                    _logger.LogInformation($"{DateTime.Now} Synchronization total corners (pre-match) data from ISport Odds API every {_intervalTotalCorners} second succeed");
                 }
                 else
-                    _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (pre-match) data!");
+                    _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (pre-match) data");
 
                 TotalCorners? cornerInPlayISport = JsonSerializer.Deserialize<TotalCorners>(resultInPlay, Utils.JsonSerializerOptions);
                 if (cornerInPlayISport is not null && cornerInPlayISport.Code is 0)
                 {
                     LoadCornersToDatabaseAndMemory(cornerInPlayISport, Utils.TotalCornersInPlayId);
-                    _logger.LogInformation($"{DateTime.Now} Synchronization total corners (in-play) data from ISport Odds API every {_intervalTotalCorners} second succeed!");
+                    _logger.LogInformation($"{DateTime.Now} Synchronization total corners (in-play) data from ISport Odds API every {_intervalTotalCorners} second succeed");
                 }
                 else
-                    _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (in-play) data!");
+                    _logger.LogInformation($"{DateTime.Now} ISport API return empty total corners (in-play) data");
             }
             catch (Exception ex)
             {
@@ -247,11 +285,5 @@ namespace ISport.Odds.Services
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
         }
-    }
-
-    public class MatchCompany
-    {
-        public string MatchId { get; set; }
-        public string CompanyId { get; set; }
     }
 }
